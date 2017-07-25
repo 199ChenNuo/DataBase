@@ -250,23 +250,24 @@ bool RBTree::add(int key, int value, Cache & cache) {
 		return true;
 	}
 
+	
 	Node* dad = root;
-	Node* curNode = dad;
 
-	while (curNode->pos != -1) {
+	int flag = 0;
+	while (!flag) {
 		if (key == dad->key) {
-			cout << "Error: key " << key << " exits!" << endl;
+			//============delete promt for test ================
+			//cout << "Error: key " << key << " exits!" << endl;
+			//===========================================
 			return false;
 		}
 		else if (key < dad->key) {
-			// if (newNode should be father->left) : flag == -1
-			dad = curNode;
-			curNode = dad->left;
+			flag = (dad->left->pos == -1) ? -1 : 0;
+			dad = (!flag) ? dad->left : dad;
 		}
 		else {
-			// if (newNode should be father->right) : flag == 1
-			dad = curNode;
-			curNode = dad->right;
+			flag = (dad->right->pos == -1) ? 1 : 0;
+			dad = (!flag) ? dad->right : dad;
 		}
 	}
 
@@ -280,13 +281,14 @@ bool RBTree::add(int key, int value, Cache & cache) {
 		setLastPos(pos + 1);
 	}
 
-	if (curNode==dad->right) {
+	if (flag == 1) {
 		dad->right->pos = pos;
 		dad->right->key = key;
 		dad->right->color = RED;
 		dad->right->left = new Node;
 		dad->right->right = new Node;
-		dad->right->left->father = dad->right->right->father = curNode;
+		dad->right->left->father = dad->right->right->father = dad->right;
+		doubleRed(dad->right);;
 	}
 	else {
 		dad->left->pos = pos;
@@ -294,12 +296,11 @@ bool RBTree::add(int key, int value, Cache & cache) {
 		dad->left->color = RED;
 		dad->left->left = new Node;
 		dad->left->right = new Node;
-		dad->left->left->father = dad->left->right->father = curNode;
+		dad->left->left->father = dad->left->right->father = dad->left;
+		doubleRed(dad->left);
 	}
 	
-	
-	// if dad is RED, balance the tree in doubleRed(Node* & redNode)
-	doubleRed(curNode);
+
 	return true;
 }
 

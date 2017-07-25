@@ -37,6 +37,9 @@ string getFileName();
 
 // update data file
 void updateFile(fstream & dataFile, Cache & cache);
+void fileDeleteNode(fstream & dataFile, int pos);
+void fileModifyNode(fstream & dataFile, int pos, int value);
+void fileAddNode(fstream & dataFile, int pos, int value);
 
 // close data file(after update data file)
 void closeFile(fstream & dataFile, string & indexFileName, RBTree & tree, Cache & cache);

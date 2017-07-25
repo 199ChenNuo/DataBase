@@ -5,9 +5,9 @@
 int main() {
 	time_t startTime, finishTime;
 
-	startTime = clock();
+	startTime = clock();;
 	
-	totalNodeTest1();
+	standardTest();
 
 	finishTime = clock();
 	cout << "Time: " << double(finishTime - startTime) << "ms." << endl;

@@ -2,12 +2,12 @@
 
 #include <sstream>
 
-// contain key(int: 4 bytes), " "(1 byte), '\n' (1 byte) and  value(int: 4 bytes)
-#define NODE_BYTE 8
 // contain key(int: 4 bytes) and a " "(1 byte)
-#define INDEX_BYTE 4
+#define INDEX_BYTE sizeof(int)
 // contain value(4 bytes)
-#define VALUE_BYTE 4
+#define VALUE_BYTE sizeof(int)
+// contain key(int: 4 bytes), " "(1 byte), '\n' (1 byte) and  value(int: 4 bytes)
+#define NODE_BYTE  VALUE_BYTE+INDEX_BYTE
 
 extern string dataFileName;
 extern string indexFileName;
@@ -149,6 +149,7 @@ void getFile(fstream & dataFile, RBTree & tree, Cache & cache) {
 	dataFile.open(dataFileName, ios::in | ios::binary);
 
 	while (!dataFile) {
+		cout << "open " << dataFileName << " failed." << endl;
 		dataFileName = getFileName();
 		if (dataFileName == "quit")
 			return;
@@ -156,7 +157,7 @@ void getFile(fstream & dataFile, RBTree & tree, Cache & cache) {
 	}
 
 
-	indexFileName = "IndexFor" + dataFileName;
+	indexFileName = "indexFor" + dataFileName;
 
 	treeFromFile(tree, dataFile, indexFileName, cache);
 
@@ -177,10 +178,11 @@ void updateFile(fstream & dataFile, Cache & cache) {
 
 	if (modifySize || addSize || deleteSize) {
 		cout << "updating the file...";
-		for (int i = 0; i < modifySize; ++i) {
+		for (int i = 0; i < deleteSize; ++i) {
 			int pos = cache.deletePos.top();
 			cache.deletePos.pop();
 			cout << "Delete data in data file, pos:" << pos << endl;
+			fileDeleteNode(dataFile, pos);
 		}
 		map<Node*, int>::iterator it;
 		for (it = cache.addNode.begin(); it != cache.addNode.end(); ++it) {
@@ -188,16 +190,47 @@ void updateFile(fstream & dataFile, Cache & cache) {
 			int pos = it->first->pos;
 			int value = it->second;
 			cout << "newly add data in data file, key: " << key << " pos: " << pos << " value: " << value << endl;
+			fileAddNode(dataFile, pos, value);
 		}
 		for (it = cache.modifyNode.begin(); it != cache.modifyNode.end(); ++it) {
 			int key = it->first->key;
 			int pos = it->first->pos;
 			int value = it->second;
 			cout << "modify data in data file, key: " << key << " pos: " << pos << " value: " << value << endl;
+			fileModifyNode(dataFile, pos, value);
 		}
 		cache.modifyNode.clear();
 		cache.addNode.clear();
 	}
+}
+
+void fileDeleteNode(fstream & dataFile, int pos) {
+	int nodePos = pos * NODE_BYTE;
+	dataFile.seekg(0, ios::beg);
+	int fileLen = dataFile.tellg();
+	// the pos of node( next to the node to be deleted)
+	dataFile.seekg(nodePos + NODE_BYTE, ios::beg);
+	int nodeNum = (fileLen - nodePos) / NODE_BYTE;
+	for (int i = 0; i < nodeNum; ++i) {
+		int key = -1;
+		int value = -1;
+		dataFile.read((char*)&key, sizeof(int));
+		dataFile.read((char*)&value, sizeof(int));
+		dataFile.seekg(-8);
+		dataFile.write((char*)&key, sizeof(int));
+		dataFile.write((char*)&value, sizeof(int));
+	}
+}
+
+void fileModifyNode(fstream & dataFile, int pos, int value) {
+	int nodePos = pos * NODE_BYTE;
+	dataFile.seekg(nodePos + INDEX_BYTE, ios::beg);
+	dataFile.write((char*)&value, value);
+}
+
+void fileAddNode(fstream & dataFile, int pos, int value) {
+	// form last to pos, push back
+	// put node into pos
 }
 
 void closeFile(fstream & dataFile, string & indexFileName, RBTree & tree, Cache & cache) {
@@ -223,39 +256,42 @@ void treeFromFile(RBTree & tree, fstream & dataFile, string & indexFileName, Cac
 	}
 
 	// set tree from index file
-	string line = "";
-	while (getline(indexFile, line)) {
-		string::size_type pos1, pos2, pos3;
-		string nodePos;
-		stringstream ss1, ss2, ss3;
-		int dataKey = 0;
-		int dataPos = 0;
-		int nodeColor = 0;
+	indexFile.seekg(0, ios::end);
+	int indexLen = indexFile.tellg();
+	int curPos = 0;
+	indexFile.seekg(0, ios::beg);
 
-		pos1 = line.find(" ");
-		pos2 = line.find(" ", pos1 + 1);
-		pos3 = line.find(" ", pos2 + 1);
+	int nodeNum = indexLen / NODE_BYTE;
+	while(curPos != indexLen) {
+		int nodeInforLen = 0;
+		string nodePos = "";
+		int key = -1;
+		int pos = -1;
+		int color = -1;
 
-		nodePos = line.substr(0, pos1);
-		ss1 << line.substr(pos1 + 1, pos2 - pos2 - 1);
-		ss2 << line.substr(pos2 + 1, pos3 - pos2 - 1);
-		ss3 << line.substr(pos3 + 1);
+		// get the length of the information of the node
+		indexFile.read((char*)& nodeInforLen, sizeof(int));
 
-		ss1 >> dataKey;
-		ss2 >> dataPos;
-		ss3 >> nodeColor;
+		indexFile.read((char*)& nodePos, nodeInforLen - 3 * sizeof(int));
+		indexFile.read((char*)& key, sizeof(int));
+		indexFile.read((char*)& pos, sizeof(int));
+		indexFile.read((char*)& color, sizeof(int));
 
-		indexAddNode(tree, nodePos, dataKey, dataPos, nodeColor);
+		indexAddNode(tree, nodePos, key, pos, color);
+
+		curPos += NODE_BYTE;
 	}
 }
 
-void indexAddNode(RBTree & tree, string & nodePos, int dataKey, int dataPos, int nodeColor) {
+void indexAddNode(RBTree & tree, string & nodePos, int key, int pos, int color) {
 	Node* cur = tree.getRoot();
 	Node* fatherNode = cur;
 
+	// if the tree is empty
 	if (cur == NULL || cur->pos == -1) {
 		delete cur;
-		cur = new Node(dataKey, dataPos);
+		cur = new Node(key, pos);
+		tree.setLastPos(1);
 		return;
 	}
 
@@ -267,21 +303,17 @@ void indexAddNode(RBTree & tree, string & nodePos, int dataKey, int dataPos, int
 		cur = (dirction == to_string(LEFT)) ? cur->left : cur->right;
 	}
 
-	bool isLeft = true;
-	if (cur == fatherNode->right) {
-		isLeft = false;
-	}
+	cur->key = key;
+	cur->pos = pos;
+	cur->color = color;
+	cur->left = new Node;
+	cur->right = new Node;
+	cur->left->father = cur->right->father = cur;
 
-	cur = new Node(dataKey, dataPos);
-	cur->color = nodeColor;
-	cur->father = fatherNode;
-	if (isLeft) {
-		fatherNode->left = cur;
-	}
-	else {
-		fatherNode->right = cur;
-	}
-
+	// update tree's lastPos
+	// so that when add node it won't make mistake
+	int lastPos = tree.getLastPos();
+	tree.setLastPos(lastPos + 1);
 }
 
 void treeFromData(RBTree & tree, fstream & dataFile, string & indexFileName, Cache & cache) {
@@ -305,14 +337,24 @@ void treeFromData(RBTree & tree, fstream & dataFile, string & indexFileName, Cac
 	setIndexFile(tree, indexFileName);
 }
 
+// set index file
+// nodes are managed in level-order
 void setIndexFile(RBTree & tree, string & indexFileName) {
-	fstream indexFile(indexFileName);
+	ofstream indexFile(indexFileName, ios::out | ios::binary);
 
 	queue<Node*> nodeWindow;
 	queue<string> posWindow;
-	nodeWindow.push(tree.getRoot());
-	posWindow.push("");
 
+	Node* root = tree.getRoot();
+
+	// if the tree is empty
+	if (root == NULL) {
+		return;
+	}
+
+	// initialize two windows
+	nodeWindow.push(root);
+	posWindow.push("");
 
 	while (nodeWindow.size() != 0) {
 		Node* topNode = nodeWindow.front();
@@ -321,17 +363,26 @@ void setIndexFile(RBTree & tree, string & indexFileName) {
 		string curPos = posWindow.front();
 		posWindow.pop();
 
+		// the length of the node's information( curPos + key + pos + color )
+		int nodeInforLen = 3*sizeof(int) + sizeof(char)*curPos.size();
+
+		// first write how long the node's information is
+		// then write every necessary information
+		indexFile.write((char*)& nodeInforLen, sizeof(int));
+		indexFile.write(curPos.c_str(), sizeof(char) * curPos.size());
+		indexFile.write((char*)&topNode->key, sizeof(int));
+		indexFile.write((char*)&topNode->pos, sizeof(int));
+		indexFile.write((char*)&topNode->color, sizeof(int));
+		
+		Node* lc = topNode->left;
 		Node* rc = topNode->right;
-		Node* lc = topNode->right;
 
-		indexFile << curPos << " " << topNode->key << " " << topNode->pos << " " << topNode->color << '\n';
-
-		if (lc != NULL && lc->pos != -1) {
+		if (lc->pos != -1) {
 			nodeWindow.push(lc);
 			posWindow.push(curPos + to_string(LEFT));
 		}
 
-		if (rc != NULL && rc->pos != -1) {
+		if (rc->pos != -1) {
 			nodeWindow.push(rc);
 			posWindow.push(curPos + to_string(RIGHT));
 		}
@@ -342,55 +393,32 @@ void setIndexFile(RBTree & tree, string & indexFileName) {
 
 void treeFromData(RBTree & tree, fstream & dataFile, Cache & cache) {
 	dataFile.seekg(0, ios::end);
-	int lenght = dataFile.tellg();
+	int length = dataFile.tellg();
 	dataFile.seekg(0, ios::beg);
 
-	cout << "file len" << lenght << endl;
-
-	int nodeNum = lenght / NODE_BYTE;
+	// the number of nodes
+	int nodeNum = length / NODE_BYTE;
+	// current position in dataFile
 	int curPos = 0;
 
-	for (int i = 0; i < nodeNum; ++i) {
-		dataFile.clear(ios::goodbit);
-		//cout << "TempPos:" << dataFile.tellg() << endl;
+	cout << "length:" << length << " NODE_BYTE:" << NODE_BYTE << endl;
+	cout << "nodeNum:" << nodeNum << endl;
 
-		dataFile.seekg(curPos, ios::beg);
+	while(curPos!=length) {
+		//dataFile.clear(ios::goodbit);
+		//dataFile.seekg(curPos, ios::beg);
 
-		int nodeKey = -2;
-		int nodeValue = -2;
+		int nodeKey = -1;
+		int nodeValue = -1;
 
 		dataFile.read((char*)& nodeKey, sizeof(int));
-		int tempPos = dataFile.tellg();
-		//cout << "TempPos:" << tempPos << endl;
-		if (tempPos == -1) {
-			tempPos = curPos + sizeof(int);
-			cout << "TempPos:" << tempPos << endl;
-			system("pause");
-		}
-		dataFile.read((char*)&nodeValue, sizeof(int));
-		tempPos = dataFile.tellg();
-		//cout << "TempPos:" << tempPos << endl;
-		if (tempPos == -1) {
-			tempPos = curPos + sizeof(int);
-			cout << "TempPos:" << tempPos << endl;
-			system("pause");
-		}
-			
+		dataFile.read((char*)& nodeValue, sizeof(int));
 
-		//if (nodeKey == -2) {
-			//cout << "tempPos:" << dataFile.tellg() << endl;
-			//system("pause");
-		//}
+		tree.add(nodeKey, nodeValue, cache);
 
-		//cout << "key: " << nodeKey << "\tValue: " << nodeValue << endl;
-
-		!tree.add(nodeKey, nodeValue, cache);
 		curPos += NODE_BYTE;
-
-		//cout << "TempPos:" << dataFile.tellg() << endl;
-		dataFile.seekg(curPos, ios::beg);
-		//cout << "TempPos:" << dataFile.tellg() << " cur Pos" << curPos << endl;
-		//cout << "=======================" << endl;
-
 	}
+
+	// set the index file
+	setIndexFile(tree, indexFileName);
 }
