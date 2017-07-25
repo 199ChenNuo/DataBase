@@ -52,7 +52,7 @@ void closeFile(fstream & dataFile, string & indexFileName, RBTree & tree, Cache 
 void treeFromFile(RBTree & tree, fstream & dataFile, string & indexFileName, Cache & cache);
 
 // add node from information get from index file
-void indexAddNode(RBTree & tree, string & nodePos, int dataKey, int dataPos, int nodeColor);
+void indexAddNode(RBTree & tree, string nodePos, int dataKey, int dataPos, int nodeColor);
 
 // after set tree, set index file for futrue need
 void setIndexFile(RBTree & tree, string & indexFileName);

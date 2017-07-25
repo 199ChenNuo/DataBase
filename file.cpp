@@ -264,7 +264,6 @@ void treeFromFile(RBTree & tree, fstream & dataFile, string & indexFileName, Cac
 	int nodeNum = indexLen / NODE_BYTE;
 	while(curPos != indexLen) {
 		int nodeInforLen = 0;
-		string nodePos = "";
 		int key = -1;
 		int pos = -1;
 		int color = -1;
@@ -272,7 +271,9 @@ void treeFromFile(RBTree & tree, fstream & dataFile, string & indexFileName, Cac
 		// get the length of the information of the node
 		indexFile.read((char*)& nodeInforLen, sizeof(int));
 
-		indexFile.read((char*)& nodePos, nodeInforLen - 3 * sizeof(int));
+		char* nodePos = new char[nodeInforLen - 3 * sizeof(int)];
+
+		indexFile.read(nodePos, nodeInforLen - 3 * sizeof(int));
 		indexFile.read((char*)& key, sizeof(int));
 		indexFile.read((char*)& pos, sizeof(int));
 		indexFile.read((char*)& color, sizeof(int));
@@ -283,7 +284,7 @@ void treeFromFile(RBTree & tree, fstream & dataFile, string & indexFileName, Cac
 	}
 }
 
-void indexAddNode(RBTree & tree, string & nodePos, int key, int pos, int color) {
+void indexAddNode(RBTree & tree, string nodePos, int key, int pos, int color) {
 	Node* cur = tree.getRoot();
 	Node* fatherNode = cur;
 
@@ -316,26 +317,6 @@ void indexAddNode(RBTree & tree, string & nodePos, int key, int pos, int color) 
 	tree.setLastPos(lastPos + 1);
 }
 
-void treeFromData(RBTree & tree, fstream & dataFile, string & indexFileName, Cache & cache) {
-	string line = "";
-	while (getline(dataFile, line)) {
-		string::size_type pos = line.find(" ");
-
-		stringstream ss1, ss2;
-		int dataKey = 0;
-		int dataValue = 0;
-
-		ss1 << line.substr(0, pos);
-		ss2 << line.substr(pos + 1);
-
-		ss1 >> dataKey;
-		ss2 >> dataValue;
-
-		tree.add(dataKey, dataValue, cache);
-	}
-
-	setIndexFile(tree, indexFileName);
-}
 
 // set index file
 // nodes are managed in level-order
@@ -400,9 +381,6 @@ void treeFromData(RBTree & tree, fstream & dataFile, Cache & cache) {
 	int nodeNum = length / NODE_BYTE;
 	// current position in dataFile
 	int curPos = 0;
-
-	cout << "length:" << length << " NODE_BYTE:" << NODE_BYTE << endl;
-	cout << "nodeNum:" << nodeNum << endl;
 
 	while(curPos!=length) {
 		//dataFile.clear(ios::goodbit);
