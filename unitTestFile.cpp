@@ -10,7 +10,7 @@ void fileTree0(){
 	RBTree tree;
 	Cache cache;
 
-	getFile(dataFile, tree, cache);
+	getFile(tree, cache);
 }
 
 void indexFile0() {
@@ -19,6 +19,6 @@ void indexFile0() {
 	RBTree tree;
 	Cache cache;
 
-	indexFileName = "IndexForDataBase.txt";
-	treeFromFile(tree, dataFile, indexFileName, cache);
+	indexFileName = "indexForsmall.txt";
+	treeFromFile(tree, cache);
 }

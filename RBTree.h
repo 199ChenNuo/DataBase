@@ -20,39 +20,14 @@ class RBTree{
 public:
     //------------------------
 
-    //RBTree(string & indexFileName);
-    //construct RBTree from index file
-
-    //void setTreeFile(string & indexFileName);
-    //construct index file from tree
-
-    //void newDataFile(string & dataFileName);
-    //open data file and put new information in
-
-    //void newIndexFile(string & indexFileName);
-    //open index file and put new information in
-
     RBTree();
 
     RBTree(int key, int value);
 
+	void clear();
+
     //-----------------------------
 
-
-    //RBTree treeFromFile(string & indexFileName, string & dataFileName);
-    //RBTree treeFromFile(string & dataFileName);
-    //-----------------------------
-
-    //map<Node* node, int value> modifyNode---nodes that were recently modified
-   // map<Node*, int> modifyNode;
-
-    //map<int key, int pos> deleteNode---nodes that were recently deleted
-   // map<int, int> deleteNode;
-
-    //map<Node* node, int value> addNode---nodes that were recentlt added,
-    // notice that position of new nodes should first check deleteNode
-   // map<Node*, int> addNode;
-    //----------------------------
 
 	int totalNode();
 	int totalNode(Node* & node);
@@ -86,8 +61,6 @@ public:
     //-----------------------------------
 
     bool add(int key, int value, Cache & cache);
-    //bool add(string & line);
-    //bool add(string & nodePos, int nodeKey, int dataPos, int nodeColor);
 
     bool remove(int key, Cache & cache);
     void doubleBlack(Node* & node);

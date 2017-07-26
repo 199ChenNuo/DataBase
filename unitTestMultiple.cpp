@@ -1,33 +1,31 @@
 #include "test.h"
 
-// add 1,000,000 node into an empty tree ( sort, the wrost condition)
+extern string dataFileName;
+extern string indexFileName;
+
+// add 1,000,000 node into an empty tree 
 void fileAddNode0() {
 	RBTree tree;
 	Cache cache;
 
+	// notice that key is in ascending order, the worst condition for Red Black Tree
 	for (int i = 0; i < 1000000; ++i) {
 		tree.add(i, i, cache);
 	}
 }
 
-// add 100 new node into a tree( already contains 1,000,000 nodes)
+// remove 1,000,000 nodes from the tree(every time is root, the worst condition)
+// notice that the function used here--tree.remove(int key, Cache & cache) is not accessible
+// so the file won't be updated( the file will be updated in the add function that can be used by users)
 void fileAddNode1() {
 	RBTree tree;
 	Cache cache;
-	fstream dataFile;
+	dataFileName = "largeData.txt";
 
-	dataFile.open("largeData.txt", ios::in | ios::binary);
-
-	treeFromData(tree, dataFile, cache);
-
-	cout << "total node:" << tree.getLastPos();
-
-	// delete
-	int count = 0;
+	treeFromData(tree, cache);
 
 	Node* cur = tree.getRoot();
 	while (cur->pos != -1) {
-		count++;
 		tree.remove(cur->key, cache);
 		cur = tree.getRoot();
 	}
@@ -35,11 +33,11 @@ void fileAddNode1() {
 
 // fetch 100 node in a tree
 void fileFetchNode() {
-	fstream dataFile("smallDataFile0.txt", ios::in | ios::binary);
 	RBTree tree;
 	Cache cache;
+	dataFileName = "small.txt";
 
-	treeFromData(tree, dataFile, cache);
+	treeFromData(tree, cache);
 
 	for (int i = 0; i < 100; ++i) {
 		tree.fetch(i);
@@ -48,13 +46,11 @@ void fileFetchNode() {
 
 // modify 100 node in a tree( contains 1,000,000 nodes)
 void fileModifyNode() {
-	fstream dataFile;
 	RBTree tree;
 	Cache cache;
+	dataFileName = "largeData.txt";
 
-	dataFile.open("largeDataBase.txt", ios::in | ios::binary);
-
-	treeFromData(tree, dataFile, cache);
+	treeFromData(tree, cache);
 
 	int count = 0;
 	for (int i = 0; count < 100; ++i) {
@@ -66,11 +62,11 @@ void fileModifyNode() {
 
 // remove root from a tree until it's empty
 void fileDeleteNode() {
-	fstream dataFile("smallDataFile0.txt", ios::in | ios::binary);
 	RBTree tree; 
 	Cache cache;
+	dataFileName = "small.txt";
 
-	treeFromData(tree, dataFile, cache);
+	treeFromData(tree, cache);
 
 	Node* curNode = tree.getRoot();
 	while (curNode != NULL) {
@@ -80,29 +76,14 @@ void fileDeleteNode() {
 }
 
 
-void fileViewNode0() {
-	RBTree tree;
-	Cache cache;
-	fstream dataFile("smallDataBase0.txt", ios::in | ios::binary);
-	
-	treeFromData(tree, dataFile, cache);
-
-	Node* curNode = tree.getRoot();
-
-	while (curNode != NULL) {
-		tree.printSingle(curNode);
-		tree.remove(curNode->key, cache);
-		curNode = tree.getRoot();
-	}
-}
 
 // print 100 node
 void fileViewNode1() {
 	RBTree tree;
 	Cache cache;
-	fstream dataFile("smallDataBase0.txt", ios::in | ios::binary);
+	dataFileName = "largeData.txt";
 
-	treeFromData(tree, dataFile, cache);
+	treeFromData(tree, cache);
 
 	int count = 0;
 	for (int i = 0; count < 100; ++i) {

@@ -14,6 +14,8 @@ using namespace std;
 struct Cache{
 	Cache();
 
+	void clear();
+
 	priority_queue<int>deletePos;
 
 	map<Node*, int>modifyNode;

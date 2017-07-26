@@ -18,10 +18,26 @@ RBTree::RBTree(int key, int value){
 	root->height = 0;
     this->setHeight(1);
     this->setLastPos(1);
-
-    //addNode[root] = value;
 }
 
+
+void RBTree::clear() {
+	queue<Node*> nodeWindow;
+	nodeWindow.push(root);
+
+	while (nodeWindow.size() != 0) {
+		Node* topNode = nodeWindow.front();
+		nodeWindow.pop();
+
+		if (topNode->pos != -1) {
+			nodeWindow.push(topNode->left);
+			nodeWindow.push(topNode->right);
+		}
+		delete topNode;
+	}
+	root = new Node;
+	lastPos = 0;
+}
 
 //-------------------------------------
 
@@ -246,7 +262,7 @@ bool RBTree::add(int key, int value, Cache & cache) {
 		setLastPos(1);
 
 		cache.addNode[root] = value;
-
+		cout << "Add succeed!" << endl;
 		return true;
 	}
 
@@ -256,9 +272,7 @@ bool RBTree::add(int key, int value, Cache & cache) {
 	int flag = 0;
 	while (!flag) {
 		if (key == dad->key) {
-			//============delete promt for test ================
-			//cout << "Error: key " << key << " exits!" << endl;
-			//===========================================
+			cout << "Error: key " << key << " exits!" << endl;
 			return false;
 		}
 		else if (key < dad->key) {
@@ -300,7 +314,7 @@ bool RBTree::add(int key, int value, Cache & cache) {
 		doubleRed(dad->left);
 	}
 	
-
+	cache.addNode[fetch(key)] = value;
 	return true;
 }
 
@@ -310,12 +324,12 @@ bool RBTree::remove(int key, Cache & cache) {
 	Node* node = fetch(key);
 
 	if (node == NULL) {
-		//cout << "Error: key " << key << " does not exits!" << endl;
+		cout << "Error: key " << key << " does not exits!" << endl;
 		return false;
 	}
 
 	if (node->pos == -1) {
-		//cout << "Error: key " << key << "does not exits!" << endl;
+		cout << "Error: key " << key << "does not exits!" << endl;
 		return false;
 	}
 
@@ -343,18 +357,7 @@ bool RBTree::remove(int key, Cache & cache) {
 	// look in node's right subtree
 	if ((rc != NULL) && (rc->pos != -1)) {
 
-		
 		Node* rightMin = minNodeOf(rc);
-
-		
-		/*
-		Node* rightMin = rc;
-		Node* minLeft = rc;
-		while (minLeft != NULL && minLeft->pos != -1) {
-			rightMin = minLeft;
-			minLeft = minLeft->left;
-		}
-		*/
 
 		// replace node
 		node->key = rightMin->key;
@@ -368,6 +371,7 @@ bool RBTree::remove(int key, Cache & cache) {
 				rightMin->key = rightMin->pos = -1;
 				rightMin->left = rightMin->right = NULL;
 				rightMin->color = BLACK;
+				cout << "Delete succeed!" << endl;
 				return true;
 		}
 
@@ -388,6 +392,7 @@ bool RBTree::remove(int key, Cache & cache) {
 			}
 
 			doubleBlack(rightMin);
+			cout << "Delete succeed!" << endl;
 			return true;
 	}
 
@@ -407,6 +412,7 @@ bool RBTree::remove(int key, Cache & cache) {
 			maxNode->key = maxNode->pos = -1;
 			maxNode->left = maxNode->right = NULL;
 			maxNode->color = BLACK;
+			cout << "Delete succeed!" << endl;
 			return true;
 		}
 
@@ -421,6 +427,7 @@ bool RBTree::remove(int key, Cache & cache) {
 		maxNode->color += maxLC->color;
 
 		doubleBlack(maxNode);
+		cout << "Delete succeed!" << endl;
 		return true;
 	}
 
@@ -431,6 +438,7 @@ bool RBTree::remove(int key, Cache & cache) {
 		if (node == root) {
 			delete root;
 			root = new Node;
+			cout << "Delete succeed!" << endl;
 			return true;
 		}
 
@@ -451,6 +459,7 @@ bool RBTree::remove(int key, Cache & cache) {
 		newNode->color += node->color;
 		delete node;
 		doubleBlack(newNode);
+		cout << "Delete succeed!" << endl;
 		return true;
 	}
 
@@ -463,21 +472,20 @@ bool RBTree::modify(int key, int value, Cache & cache){
     Node* node = fetch( key );
 
     if( node == NULL ){
-        //cout << "Error: key does not exits!" << endl;
+        cout << "Error: key does not exits!" << endl;
         return false;
     }
 
 	map<Node*, int>::iterator it;
-		for( it = cache.addNode.begin(); it != cache.addNode.end(); ++it){
+	for( it = cache.addNode.begin(); it != cache.addNode.end(); ++it){
 			if( it->first->key == key){
 				cache.modifyNode[node] = it->second;
+				cout << "Modify succeed!" << endl;
 				return true;
         }
-   }
+    }
 
-    /* the node to be modified is not in addNode
-    * we have to travarse the tree */
-
+	// node is not in cache, find the node in the tree
     Node* tempNode = this->root;
     int flag = 0;
     
@@ -485,17 +493,17 @@ bool RBTree::modify(int key, int value, Cache & cache){
         if( tempNode->key == key ){
 			cache.modifyNode[tempNode] = value;
             return true;            
-
-        } else if(tempNode->key > key){
+		}
+		else if(tempNode->key > key){
             flag = ( tempNode->left == NULL || tempNode->left->pos == -1) ? 1 : 0;
             tempNode = (!flag) ? tempNode->left : tempNode;
-
-        }else{
+        }
+		else{
             flag = ( tempNode->right == NULL || tempNode->right->pos == -1) ? -1 : 0;
             tempNode = (!flag) ? tempNode->right : tempNode;
          }
     }
-	//cout << "Error: key does not exits!" << endl;
+	cout << "Error: key does not exits!" << endl;
 	return false;
 }
 

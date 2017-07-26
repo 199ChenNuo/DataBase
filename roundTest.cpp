@@ -1,26 +1,38 @@
 #include "test.h"
 #include <time.h>
 
+extern string dataFileName;
+extern string indexFileName;
+
 void roundTest0() {
-	fstream dataFile("largeData.txt", ios::in | ios::binary);
 	RBTree tree;
 	Cache cache;
+	dataFileName = "data100w.txt";
+	indexFileName = "indexFordata100w.txt";
 
-	treeFromData(tree, dataFile, cache);
+	time_t start0, start1, start2, end0, end1, end2;
 
-	int count = 0;
-	while (count++ < 1000000) {
-		if (count % 37 == 0) {
-			tree.remove(count, cache);
-		}
-		if (count % 11 == 0) {
-			tree.add(count, count, cache);
-			tree.fetch(count);
-		}
-		if (count % 17 == 0) {
-			tree.modify(count, count, cache);
-		}
-	}
+	start0 = clock();
+	treeFromData(tree, cache);
+	end0 = clock();
+
+	cout << "set tree from data, time cost:" << end0 - start0 << "ms." << endl;
+
+	start1 = clock();
+	setIndexFile(tree);
+	end1 = clock();
+
+	cout << "set index from tree, time cost:" << end1 - start1 << "ms." << endl;
+
+	tree.clear();
+	cache.clear();
+
+	start2 = clock();
+	treeFromFile(tree, cache);
+	end2 = clock();
+
+	cout << "set tree from index file, time cost:" << end2 - start2 << "ms." << endl;
+
 }
 
 void roundTest1() {
@@ -28,7 +40,7 @@ void roundTest1() {
 	RBTree tree;
 	Cache cache;
 
-	treeFromData(tree, dataFile, cache);
+	treeFromData(tree, cache);
 
 	cout << "total:" << tree.getLastPos() << endl;
 

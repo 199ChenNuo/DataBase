@@ -9,3 +9,11 @@ Cache::Cache() {
 
 	map<Node*, int>addNode;
 }
+void Cache::clear() {
+	while (deletePos.size() != 0) {
+		deletePos.pop();
+	}
+
+	modifyNode.clear();
+	addNode.clear();
+}

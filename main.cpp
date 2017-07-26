@@ -7,11 +7,14 @@ int main() {
 
 	startTime = clock();;
 	
-	standardTest();
+
+		roundTest0();
+
 
 	finishTime = clock();
-	cout << "Time: " << double(finishTime - startTime) << "ms." << endl;
-	
+	cout << "total time cost:" << double(finishTime - startTime) << "ms." << endl;
+
 	system("pause");
+
 	return 0;
 }

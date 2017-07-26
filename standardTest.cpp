@@ -16,7 +16,6 @@ extern string indexFileName;
 
 int standardTest()
 try {
-	fstream dataFile;
 	RBTree tree;
 	Cache cache;
 
@@ -24,7 +23,7 @@ try {
 
 	int flag = OPEN_DATA_FILE;
 	while (flag != RETURN) {
-		react(flag, dataFile, tree, cache);
+		react(flag, tree, cache);
 	}
 
 	return 0;

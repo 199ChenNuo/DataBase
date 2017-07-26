@@ -5,7 +5,7 @@
 
 //===================================
 //------- unit test -----------------------------------------
-
+void tempIndexTest();
 //------------------- unit test for tree --------------------
 void totalNodeTest0();
 void totalNodeTest1();
@@ -53,7 +53,6 @@ void fileAddNode1();
 
 void fileFetchNode();
 
-void fileViewNode0();
 void fileViewNode1();
 
 void fileDeleteNode();
