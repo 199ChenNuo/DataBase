@@ -7,6 +7,7 @@ extern string indexFileName;
 void roundTest0() {
 	RBTree tree;
 	Cache cache;
+
 	dataFileName = "data100w.txt";
 	indexFileName = "indexFordata100w.txt";
 

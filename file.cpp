@@ -1,5 +1,5 @@
 #include "file.h"
-
+#include <string>
 #include <sstream>
 
 // contain key(int: 4 bytes) and a " "(1 byte)
@@ -8,6 +8,9 @@
 #define VALUE_BYTE sizeof(int)
 // contain key(int: 4 bytes), " "(1 byte), '\n' (1 byte) and  value(int: 4 bytes)
 #define NODE_BYTE  VALUE_BYTE+INDEX_BYTE
+
+#define TO_LEFT false
+#define TO_RIGHT true
 
 
 extern string dataFileName;
@@ -302,15 +305,12 @@ void treeFromFile(RBTree & tree, Cache & cache) {
 	indexFile.seekg(0, ios::beg);
 
 	// the current position of file pointer
-	int curPos = 0;
-	// current level of node
-	int curLevel = 0;
-	// go to next level or not
-	
+	int indexPos = 0;
 
-	while (curPos != indexLen) {
+	while (indexPos != indexLen) {
 		bool nextLevel = true;
 		int nodeInforLen = 0;
+		vector<bool> nodePos;
 		int key = -2;
 		int pos = -2;
 		int color = -1;
@@ -319,9 +319,13 @@ void treeFromFile(RBTree & tree, Cache & cache) {
 		indexFile.read((char*)& nodeInforLen, sizeof(int));
 
 		int nodePosLen = nodeInforLen - 3 * sizeof(int);
-		char* nodePos = new char[nodePosLen];
 
-		indexFile.read(nodePos, nodePosLen);
+		for (int i = 0; i < nodePosLen; ++i) {
+			bool temp = false;
+			indexFile.read((char*)& temp, sizeof(bool));
+			nodePos.push_back(temp);
+		}
+		
 		indexFile.read((char*)& key, sizeof(int));
 		indexFile.read((char*)& pos, sizeof(int));
 		indexFile.read((char*)& color, sizeof(int));
@@ -337,27 +341,15 @@ void treeFromFile(RBTree & tree, Cache & cache) {
 		//===========================================
 		*/
 
-		for (int i = 0; i < nodePosLen; ++i) {
-			if (nodePos[i] != '1') {
-				nextLevel = false;
-				break;
-			}
-		}
+		indexAddNode(tree, nodePos, key, pos, color);
 
-		if (nextLevel) {
-			curLevel++;
-			cout << "curLevel: " << curLevel << endl;
-		}
-
-		indexAddNode(tree, nodePos, key, pos, color, curLevel);
-
-		curPos = indexFile.tellg();
+		indexPos = indexFile.tellg();
 	}
 	indexFile.close();
 }
 
 // add nodes into tree from index, don't need to balance the tree
-void indexAddNode(RBTree & tree, string nodePos, int key, int pos, int color, int curLevel) {
+void indexAddNode(RBTree & tree, vector<bool>& nodePos, int key, int pos, int color) {
 	Node* cur = tree.getRoot();
 
 	// if the tree is empty
@@ -368,14 +360,13 @@ void indexAddNode(RBTree & tree, string nodePos, int key, int pos, int color, in
 		return;
 	}
 
-	int size = nodePos.size();
+	int posSize = nodePos.size();
 
-	for (int i = 0; i < curLevel; ++i) {
-		string dirction = nodePos.substr(i, 1);
-		if (dirction == to_string(LEFT)) {
+	for (int i = 0; i < posSize; ++i) {
+		if (nodePos[i] == TO_LEFT) {
 			cur = cur->left;
 		}
-		else if (dirction == to_string(RIGHT)) {
+		else {
 			cur = cur->right;
 		}
 	}
@@ -401,7 +392,7 @@ void setIndexFile(RBTree & tree) {
 	ofstream indexFile(indexFileName, ios::out | ios::binary);
 
 	queue<Node*> nodeWindow;
-	queue<string> posWindow;
+	queue<vector<bool>> posWindow;
 
 	Node* root = tree.getRoot();
 
@@ -413,7 +404,8 @@ void setIndexFile(RBTree & tree) {
 
 	// initialize two windows
 	nodeWindow.push(root);
-	posWindow.push("");
+	vector<bool> rootPos;
+	posWindow.push(rootPos);
 
 	int curPosLen = 0;
 
@@ -421,16 +413,21 @@ void setIndexFile(RBTree & tree) {
 		Node* topNode = nodeWindow.front();
 		nodeWindow.pop();
 
-		string curPos = posWindow.front();
+		vector<bool> topNodePos;
 		posWindow.pop();
 
+		// the length of the vector(is also the level of this node)
+		int posLen = topNodePos.size();
 		// the length of the node's information( curPos + key + pos + color )
-		int nodeInforLen = 3 * sizeof(int) + sizeof(char)*(curPos.size());
+		int nodeInforLen = 3 * sizeof(int) + sizeof(bool)*(posLen);
 
 		// first write how long the node's information is
 		// then write every necessary information
 		indexFile.write((char*)& nodeInforLen, sizeof(int));
-		indexFile.write(curPos.c_str(), sizeof(char) * curPos.size());
+		
+		for (int i = 0; i < posLen; ++i) {
+			indexFile.write((char*)& topNodePos[i], sizeof(bool));
+		}
 		indexFile.write((char*)&topNode->key, sizeof(int));
 		indexFile.write((char*)&topNode->pos, sizeof(int));
 		indexFile.write((char*)&topNode->color, sizeof(int));
@@ -450,12 +447,16 @@ void setIndexFile(RBTree & tree) {
 		// don't write leaves into index file
 		if (lc->pos != -1) {
 			nodeWindow.push(lc);
-			posWindow.push(curPos + to_string(LEFT));
+			vector<bool> leftPos = topNodePos;
+			leftPos.push_back(TO_LEFT);
+			posWindow.push(leftPos);
 		}
 
 		if (rc->pos != -1) {
 			nodeWindow.push(rc);
-			posWindow.push(curPos + to_string(RIGHT));
+			vector<bool> rightPos = topNodePos;
+			rightPos.push_back(TO_RIGHT);
+			posWindow.push(rightPos);
 		}
 	}
 

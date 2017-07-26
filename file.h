@@ -56,7 +56,7 @@ void treeFromData(RBTree & tree, Cache & cache);
 
 
 // add node from information get from index file
-void indexAddNode(RBTree & tree, string nodePos, int dataKey, int dataPos, int nodeColor, int curLevel);
+void indexAddNode(RBTree & tree, vector<bool>& nodePos, int dataKey, int dataPos, int nodeColor);
 
 
 // after set tree, set index file for futrue need
