@@ -1,29 +1,30 @@
-#include "RBTree.h"
+#include "test.h"
+#include <windows.h>
 
 using namespace std;
-/*
-int main() {
-	RBTree tree(0, 0);
 
-	for (int i = -3; i < 5; ++i) {
-		cout << endl << "Temporary tree" << endl;
-		tree.add(i, i);
-	}
+void fetchPerformance() {
+	RBTree tree;
+	Cache cache;
 
-	tree.print();
+	dataFileName = "data100w.txt";
+	indexFileName = "indexFordata100w.txt";
 
-	for (int i = -4; i < 9; i += 1) {
-		cout << endl << "Temporary tree" << endl;
-		tree.remove(i);
-		tree.print();
-	}
+	treeFromFile(tree, cache);
 
-	for (int i = -2; i < 5; ++i) {
-		tree.printSingle(tree.fetch(i));
-		cout << endl;
-	}
+	LARGE_INTEGER nFreq;
+	LARGE_INTEGER t1;
+	LARGE_INTEGER t2;
+	double dt;
+	QueryPerformanceFrequency(&nFreq);
+	QueryPerformanceCounter(&t1);
+	
+	int key = -2;
+	tree.fetch(key);
 
-	tree.printSingle(tree.getRoot());
-	system("pause");
+	QueryPerformanceCounter(&t2);
+	dt =(t2.QuadPart - t1.QuadPart) / (double)nFreq.QuadPart;
+
+	cout << "fetch time cost: " << dt * 1000000 << "us." << endl;
+
 }
-*/

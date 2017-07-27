@@ -22,8 +22,10 @@ extern string indexFileName;
 // ----------- view a node's value ----------------------
 void viewNode(RBTree & tree, Cache & cache) {
 
-	if (!haveOpenedFile())
+	if (!haveOpenedFile()) {
+		cout << "Error: no data file opened yet!" << endl;
 		return;
+	}
 
 	string strKey = "";
 	stringstream ss;
@@ -91,8 +93,10 @@ int viewValue(int pos) {
 //--------------- add a node into the file -------------------
 void addNode(RBTree & tree, Cache & cache) {
 
-	if (!haveOpenedFile())
+	if (!haveOpenedFile()) {
+		cout << "Error: no data file opened yet!" << endl;
 		return;
+	}
 
 	stringstream ss1, ss2;
 	string strKey = "";
@@ -123,7 +127,7 @@ void addNode(RBTree & tree, Cache & cache) {
 
 	// only modify data file if the cache size reaches SIZE_TO_UPDATE
 	if (cache.addNode.size() == SIZE_TO_UPDATE) {
-		updateFile(cache);
+		updateFile(tree, cache);
 	}
 }
 
@@ -131,8 +135,10 @@ void addNode(RBTree & tree, Cache & cache) {
 //------------ modify a node's value -----------------
 void modifyNode(RBTree & tree, Cache & cache) {
 
-	if (!haveOpenedFile())
+	if (!haveOpenedFile()){
+		cout << "Error: no data file opened yet!" << endl;
 		return;
+	}
 
 	stringstream ss1, ss2;
 	string strKey = "";
@@ -160,7 +166,7 @@ void modifyNode(RBTree & tree, Cache & cache) {
 	tree.modify(key, value, cache);
 
 	if (cache.modifyNode.size() == SIZE_TO_UPDATE) {
-		updateFile(cache);
+		updateFile(tree, cache);
 	}
 }
 
@@ -168,8 +174,11 @@ void modifyNode(RBTree & tree, Cache & cache) {
 //--------------- delete a node ---------------------------
 void deleteNode(RBTree & tree, Cache & cache) {
 
-	if (!haveOpenedFile())
+	if (!haveOpenedFile()) {
+		cout << "Error: no data file opened yet!" << endl;
 		return;
+	}
+	
 
 	stringstream ss;
 	string strKey = "";
@@ -188,7 +197,7 @@ void deleteNode(RBTree & tree, Cache & cache) {
 	tree.remove(key, cache);
 
 	if (cache.deletePos.size() == SIZE_TO_UPDATE) {
-		updateFile(cache);
+		updateFile(tree, cache);
 	}
 }
 
@@ -213,13 +222,11 @@ void getFile(RBTree & tree, Cache & cache) {
 			return;
 		dataFile.open(dataFileName, ios::in | ios::binary);
 	}
-
+	dataFile.close();
 
 	indexFileName = "indexFor" + dataFileName;
 
 	treeFromFile(tree, cache);
-
-	dataFile.close();
 }
 
 //===========================================
@@ -232,11 +239,12 @@ void getFileName() {
 
 //===========================================
 //------------- updateFile -------------------
-void updateFile(Cache & cache) {
+void updateFile(RBTree & tree, Cache & cache) {
 	int modifySize = cache.modifyNode.size();
 	int addSize = cache.addNode.size();
+	int deleteSize = cache.deletePos.size();
 
-	if (modifySize || addSize) {
+	if (modifySize || addSize || deleteSize) {
 		cout << "Updating the file..." << endl;
 		map<Node*, int>::iterator it;
 		for (it = cache.addNode.begin(); it != cache.addNode.end(); ++it) {
@@ -253,14 +261,23 @@ void updateFile(Cache & cache) {
 			cout << "Modify data in data file, key: " << key << " pos: " << pos << " value: " << value << endl;
 			fileModifyNode(pos, value);
 		}
+		for (int i = 0; i < 0; ++i) {
+			cout << "Delete value at pos:" << cache.deletePos.top() << endl;
+			cache.deletePos.pop();
+		}
 		cache.modifyNode.clear();
 		cache.addNode.clear();
 	}
+	setIndexFile(tree);
 }
 
 void fileModifyNode(int pos, int value) {
+	
 	fstream dataFile(dataFileName, ios::out | ios::binary);
-	int nodePos = pos * 2 * sizeof(int)+ sizeof(int);
+	if (!dataFile) {
+		cout << "open " << dataFileName << " fail." << endl;
+	}
+	int nodePos = (pos * 2 + 1) * sizeof(int);
 	dataFile.seekg(nodePos, ios::beg);
 
 	dataFile.write((char*)& value, sizeof(int));
@@ -269,8 +286,9 @@ void fileModifyNode(int pos, int value) {
 }
 
 void fileAddNode(int pos, int key, int value) {
-	fstream dataFile(dataFileName, ios::in | ios::binary);
-	int nodePos = pos * NODE_BYTE;
+
+	fstream dataFile(dataFileName, ios::out | ios::binary);
+	int nodePos = (pos * 2) * sizeof(int) ;
 	dataFile.seekg(nodePos, ios::beg);
 
 	dataFile.write((char*)& key, sizeof(int));
@@ -278,10 +296,6 @@ void fileAddNode(int pos, int key, int value) {
 	dataFile.close();
 }
 
-void closeFile(string & indexFileName, RBTree & tree, Cache & cache) {
-	updateFile(cache);
-	setIndexFile(tree);
-}
 
 //-------------------------------------------- end --------------------------------------------
 //=============================================================================================
@@ -308,9 +322,8 @@ void treeFromFile(RBTree & tree, Cache & cache) {
 	int indexPos = 0;
 
 	while (indexPos != indexLen) {
-		bool nextLevel = true;
 		int nodeInforLen = 0;
-		vector<bool> nodePos;
+		vector<int> nodePos;
 		int key = -2;
 		int pos = -2;
 		int color = -1;
@@ -320,26 +333,15 @@ void treeFromFile(RBTree & tree, Cache & cache) {
 
 		int nodePosLen = nodeInforLen - 3 * sizeof(int);
 
-		for (int i = 0; i < nodePosLen; ++i) {
-			bool temp = false;
-			indexFile.read((char*)& temp, sizeof(bool));
+		for (int i = 0; i < nodePosLen/4; ++i) {
+			int temp = 0;
+			indexFile.read((char*)& temp, sizeof(int));
 			nodePos.push_back(temp);
 		}
 		
 		indexFile.read((char*)& key, sizeof(int));
 		indexFile.read((char*)& pos, sizeof(int));
 		indexFile.read((char*)& color, sizeof(int));
-
-		/*
-		//=================================
-		cout << "nodeInforLen:" << nodeInforLen << endl;
-		cout << "nodePos" << nodePos << endl;
-		cout << "key" << key << endl;
-		cout << "pos" << pos << endl;
-		cout << "color" << color << endl;
-		cout << "===============================" << endl;
-		//===========================================
-		*/
 
 		indexAddNode(tree, nodePos, key, pos, color);
 
@@ -349,7 +351,7 @@ void treeFromFile(RBTree & tree, Cache & cache) {
 }
 
 // add nodes into tree from index, don't need to balance the tree
-void indexAddNode(RBTree & tree, vector<bool>& nodePos, int key, int pos, int color) {
+void indexAddNode(RBTree & tree, vector<int>& nodePos, int key, int pos, int color) {
 	Node* cur = tree.getRoot();
 
 	// if the tree is empty
@@ -363,7 +365,7 @@ void indexAddNode(RBTree & tree, vector<bool>& nodePos, int key, int pos, int co
 	int posSize = nodePos.size();
 
 	for (int i = 0; i < posSize; ++i) {
-		if (nodePos[i] == TO_LEFT) {
+		if (nodePos[i] == LEFT) {
 			cur = cur->left;
 		}
 		else {
@@ -392,7 +394,7 @@ void setIndexFile(RBTree & tree) {
 	ofstream indexFile(indexFileName, ios::out | ios::binary);
 
 	queue<Node*> nodeWindow;
-	queue<vector<bool>> posWindow;
+	queue<vector<int>> posWindow;
 
 	Node* root = tree.getRoot();
 
@@ -404,42 +406,32 @@ void setIndexFile(RBTree & tree) {
 
 	// initialize two windows
 	nodeWindow.push(root);
-	vector<bool> rootPos;
+	vector<int> rootPos;
 	posWindow.push(rootPos);
-
-	int curPosLen = 0;
 
 	while (nodeWindow.size() != 0) {
 		Node* topNode = nodeWindow.front();
 		nodeWindow.pop();
 
-		vector<bool> topNodePos;
+		vector<int> topPos = posWindow.front();
 		posWindow.pop();
 
 		// the length of the vector(is also the level of this node)
-		int posLen = topNodePos.size();
+		int posLen = topPos.size();
+
 		// the length of the node's information( curPos + key + pos + color )
-		int nodeInforLen = 3 * sizeof(int) + sizeof(bool)*(posLen);
+		int nodeInforLen = (3 + posLen) * sizeof(int);
 
 		// first write how long the node's information is
 		// then write every necessary information
 		indexFile.write((char*)& nodeInforLen, sizeof(int));
-		
+
 		for (int i = 0; i < posLen; ++i) {
-			indexFile.write((char*)& topNodePos[i], sizeof(bool));
+			indexFile.write((char*)& topPos[i], sizeof(int));
 		}
 		indexFile.write((char*)&topNode->key, sizeof(int));
 		indexFile.write((char*)&topNode->pos, sizeof(int));
 		indexFile.write((char*)&topNode->color, sizeof(int));
-
-		//=================================
-		// << "nodeInforLen:" << nodeInforLen << endl;
-		// << "curPos" << curPos << endl;
-		// << "topNode->key" << topNode->key << endl;
-		// << "topNode->pos" << topNode->pos << endl;
-		// << "topNode->color" << topNode->color << endl;
-		//cout << "===============================" << endl;
-		//===========================================
 
 		Node* lc = topNode->left;
 		Node* rc = topNode->right;
@@ -447,15 +439,15 @@ void setIndexFile(RBTree & tree) {
 		// don't write leaves into index file
 		if (lc->pos != -1) {
 			nodeWindow.push(lc);
-			vector<bool> leftPos = topNodePos;
-			leftPos.push_back(TO_LEFT);
+			vector<int> leftPos = topPos;
+			leftPos.push_back(LEFT);
 			posWindow.push(leftPos);
 		}
 
 		if (rc->pos != -1) {
 			nodeWindow.push(rc);
-			vector<bool> rightPos = topNodePos;
-			rightPos.push_back(TO_RIGHT);
+			vector<int> rightPos = topPos;
+			rightPos.push_back(RIGHT);
 			posWindow.push(rightPos);
 		}
 	}
@@ -483,12 +475,6 @@ void treeFromData(RBTree & tree, Cache & cache) {
 		dataFile.read((char*)& nodeValue, sizeof(int));
 
 		tree.add(nodeKey, nodeValue, cache);
-
-		//=================================
-		//cout << "nodeKey:" << nodeKey << endl;
-		// << "nodeValue:" << nodeValue << endl;
-		// << "====================" << endl;
-		//=================================
 
 		curPos += NODE_BYTE;
 	}
@@ -539,7 +525,6 @@ bool isNum(string & str) {
 bool haveOpenedFile() {
 	fstream dataFile(dataFileName, ios::in | ios::binary);
 	if (!dataFile) {
-		cout << "Error: haven't open a data file yet!" << endl;
 		return false;
 	}
 	else {

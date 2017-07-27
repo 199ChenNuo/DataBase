@@ -37,14 +37,13 @@ void react(int & flag, RBTree & tree, Cache & cache) {
 
 	if (flag == RETURN) {
 		// make sure the data file is updateed and closed before return;
-		updateFile(cache);
-		setIndexFile(tree);
+		updateFile(tree, cache);
 		return;
 	}
 
 	else if (flag == OPEN_DATA_FILE) {
 		if (haveOpenedFile()) {
-			updateFile(cache);
+			updateFile(tree, cache);
 		}
 		tree.clear();
 		cache.clear();

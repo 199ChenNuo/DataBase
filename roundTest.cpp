@@ -1,6 +1,5 @@
 #include "test.h"
-#include <time.h>
-
+#include <windows.h>
 extern string dataFileName;
 extern string indexFileName;
 
@@ -11,28 +10,31 @@ void roundTest0() {
 	dataFileName = "data100w.txt";
 	indexFileName = "indexFordata100w.txt";
 
-	time_t start0, start1, start2, end0, end1, end2;
+	LARGE_INTEGER nFreq;
+	LARGE_INTEGER start0, start1, start2, end0, end1, end2;
 
-	start0 = clock();
+	QueryPerformanceFrequency(&nFreq);
+
+	QueryPerformanceCounter(&start0);
 	treeFromData(tree, cache);
-	end0 = clock();
+	QueryPerformanceCounter(&end0);
 
-	cout << "set tree from data, time cost:" << end0 - start0 << "ms." << endl;
+	cout << "set tree from data, time cost:" << (end0.QuadPart - start0.QuadPart) / (double)nFreq.QuadPart << "s." << endl;
 
-	start1 = clock();
+	QueryPerformanceCounter(&start1);
 	setIndexFile(tree);
-	end1 = clock();
+	QueryPerformanceCounter(&end1);
 
-	cout << "set index from tree, time cost:" << end1 - start1 << "ms." << endl;
+	cout << "set index from tree, time cost:" << (end1.QuadPart - start1.QuadPart) / (double)nFreq.QuadPart << "s." << endl;
 
 	tree.clear();
 	cache.clear();
 
-	start2 = clock();
+	QueryPerformanceCounter(&start2);
 	treeFromFile(tree, cache);
-	end2 = clock();
+	QueryPerformanceCounter(&end2);
 
-	cout << "set tree from index file, time cost:" << end2 - start2 << "ms." << endl;
+	cout << "set tree from index file, time cost:" << (end2.QuadPart - start2.QuadPart) / (double)nFreq.QuadPart << "s." << endl;
 
 }
 

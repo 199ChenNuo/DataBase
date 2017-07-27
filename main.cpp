@@ -1,15 +1,22 @@
 #include "test.h"
-#include <time.h>
+#include <windows.h>
 
 
 int main() {
-	time_t startTime, finishTime;
 
-	startTime = clock();;
-	roundTest0();
-	finishTime = clock();
+	LARGE_INTEGER nFreq;
+	LARGE_INTEGER t1;
+	LARGE_INTEGER t2;
+	double dt;
+	QueryPerformanceFrequency(&nFreq);
+	QueryPerformanceCounter(&t1);
 
-	cout << "total time cost:" << double(finishTime - startTime) << "ms." << endl;
+	standardTest();
+
+	QueryPerformanceCounter(&t2);
+	dt = (t2.QuadPart - t1.QuadPart) / (double)nFreq.QuadPart;
+
+	cout << "time cost: " << dt << "s." << endl;
 
 	system("pause");
 

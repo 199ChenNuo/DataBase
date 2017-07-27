@@ -1,7 +1,11 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <time.h>
 #include "file.h"
+
+extern string dataFileName;
+extern string indexFileName;
 
 //===================================
 //------- unit test -----------------------------------------
@@ -64,5 +68,8 @@ void roundTest1();
 
 //----- standard test ------
 int standardTest();
+
+//---- performance ----
+void fetchPerformance();
 
 #endif

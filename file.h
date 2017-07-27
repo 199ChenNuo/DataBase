@@ -39,7 +39,7 @@ void getFile(RBTree & tree, Cache & cache);
 void getFileName();
 
 // update data file
-void updateFile(Cache & cache);
+void updateFile(RBTree & tree, Cache & cache);
 void fileModifyNode(int pos, int value);
 void fileAddNode(int pos, int key, int value);
 
@@ -56,7 +56,7 @@ void treeFromData(RBTree & tree, Cache & cache);
 
 
 // add node from information get from index file
-void indexAddNode(RBTree & tree, vector<bool>& nodePos, int dataKey, int dataPos, int nodeColor);
+void indexAddNode(RBTree & tree, vector<int>& nodePos, int dataKey, int dataPos, int nodeColor);
 
 
 // after set tree, set index file for futrue need
