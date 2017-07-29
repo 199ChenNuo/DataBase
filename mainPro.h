@@ -2,7 +2,7 @@
 #define MAIN_H
 
 
-#include "file.h"
+#include "test.h"
 
 #define RETURN 0
 #define OPEN_DATA_FILE 1
@@ -11,16 +11,20 @@
 #define MODIFY_NODE 4
 #define DELETE_NODE 5
 
+string dataFileName = "";
+string indexFileName = "";
+
 
 
 using namespace std;
 
 //=================================================================================
 
-string dataFileName = "";
-string indexFileName = "";
 
 //=================================================================================
+
+// the function called in main
+int standardTest();
 
 // get user choice
 void getFlag(int & flag);
@@ -29,6 +33,30 @@ void getFlag(int & flag);
 void react(int & flag, RBTree & tree, Cache & cache);
 
 //=============================================
+
+int standardTest()
+try {
+	RBTree tree;
+	Cache cache;
+
+	// initialize, suppose to open a data file
+
+	int flag = OPEN_DATA_FILE;
+	while (flag != RETURN) {
+		react(flag, tree, cache);
+	}
+
+	return 0;
+}
+catch (exception& e) {
+	cout << e.what() << endl;
+	return 1;
+}
+catch (...) {
+	cout << "Unknow exception!" << endl;
+	return 2;
+}
+
 //---------------- react ----------------------
 
 void react(int & flag, RBTree & tree, Cache & cache) {
@@ -37,7 +65,8 @@ void react(int & flag, RBTree & tree, Cache & cache) {
 
 	if (flag == RETURN) {
 		// make sure the data file is updateed and closed before return;
-		updateFile(tree, cache);
+		if(haveOpenedFile())
+			updateFile(tree, cache);
 		return;
 	}
 
@@ -86,6 +115,8 @@ void getFlag(int & flag) {
 	cout << endl;
 
 	string strFlag = "";
+	// delete
+	cin.clear();
 	getline(cin, strFlag);
 
 	if (strFlag == "quit") {

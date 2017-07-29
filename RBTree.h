@@ -14,7 +14,7 @@
 #include <string>
 #include <sstream>
 
-#define SIZE_TO_UPDATE 20
+
 
 class RBTree{
 public:
@@ -50,13 +50,13 @@ public:
 
     //-----------------------------------
 
-    void print();
+    void print(Cache & cache);
 
-    void print(Node*  node);
+    void print(Node*  node, Cache & cache);
 
-    void print(int key);
+    void print(int key, Cache & cache);
 
-	void printSingle(Node* node);
+	void printSingle(Node* node, Cache & cache);
 
     //-----------------------------------
 

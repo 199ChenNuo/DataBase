@@ -2,15 +2,14 @@
 #define TEST_H
 
 #include <time.h>
+#include <windows.h>
 #include "file.h"
 
-extern string dataFileName;
-extern string indexFileName;
-
+//===================================
 //===================================
 //------- unit test -----------------------------------------
 void tempIndexTest();
-//------------------- unit test for tree --------------------
+
 void totalNodeTest0();
 void totalNodeTest1();
 
@@ -33,12 +32,9 @@ void removeCase3();
 void removeCase4();
 void removeCase5();
 
-
 void treeRemove0();
 void treeRemove1();
 void treeRemove2();
-
-
 
 void treeFetch0();
 void treeFetch1();
@@ -46,30 +42,42 @@ void treeFetch1();
 void treePrint0();
 void treePrint1();
 
-//------------------ unit test for file ----------------------
 void fileTree0();
 
 void indexFile0();
 
-//--------------- unit test with file, node and tree -----
-void fileAddNode0();
-void fileAddNode1();
-
+void fileAddNode();
 void fileFetchNode();
 
-void fileViewNode1();
-
+void fileViewNode();
 void fileDeleteNode();
 
-//------ round test --------
-void roundTest0();
 
-void roundTest1();
-
-//----- standard test ------
-int standardTest();
-
+//==============================
+//==============================
 //---- performance ----
 void fetchPerformance();
+void performance0();
+void performance1();
+//-------correct test---------
+void correctTest();
+//------ abnormal test ------
+void abnormalTest();
+// ----round test ----------
+void roundTest();
+
+
+// this is not test!!!
+// this is not test!!!
+// this is not test!!!
+
+//=====================================
+//---------TestTime.cpp------------------------------------
+// this function is write to get the time cost of setting tree
+void setTreeTime();
+//balance time
+void balanceTimeTest();
+// time cost use different cache size
+void cacheTime();
 
 #endif

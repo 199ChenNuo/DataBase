@@ -1,23 +1,10 @@
 #include "test.h"
-
-extern string dataFileName;
-extern string indexFileName;
-
-// add 1,000,000 node into an empty tree 
-void fileAddNode0() {
-	RBTree tree;
-	Cache cache;
-
-	// notice that key is in ascending order, the worst condition for Red Black Tree
-	for (int i = 0; i < 1000000; ++i) {
-		tree.add(i, i, cache);
-	}
-}
+#include <windows.h>
 
 // remove 1,000,000 nodes from the tree(every time is root, the worst condition)
 // notice that the function used here--tree.remove(int key, Cache & cache) is not accessible
 // so the file won't be updated( the file will be updated in the add function that can be used by users)
-void fileAddNode1() {
+void fileAddNode() {
 	RBTree tree;
 	Cache cache;
 	dataFileName = "largeData.txt";
@@ -78,7 +65,7 @@ void fileDeleteNode() {
 
 
 // print 100 node
-void fileViewNode1() {
+void fileViewNode() {
 	RBTree tree;
 	Cache cache;
 	dataFileName = "largeData.txt";
@@ -90,7 +77,7 @@ void fileViewNode1() {
 		Node* curNode = tree.fetch(i);
 
 		if (curNode != NULL) {
-			tree.printSingle(curNode);
+			tree.printSingle(curNode, cache);
 			count++;
 		}
 	}

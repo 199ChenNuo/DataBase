@@ -5,6 +5,9 @@
 #include <fstream>
 #include "RBTree.h"
 
+extern string indexFileName;
+extern string dataFileName;
+
 
 //===================================================================
 //--------- check if a data file is opened --------------------------

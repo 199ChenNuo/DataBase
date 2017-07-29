@@ -71,7 +71,7 @@ void RBTree::setLastPos(int newPos){
 
 
 // in-order
-void RBTree::print(){
+void RBTree::print(Cache & cache){
 
     if(root == NULL){
 		cout << "Empty tree" << endl;
@@ -87,7 +87,7 @@ void RBTree::print(){
 
 	if (tempNode->left != NULL) {
 
-		print(tempNode->left);
+		print(tempNode->left, cache);
 	}
     
 	if (tempNode != NULL) {
@@ -99,12 +99,12 @@ void RBTree::print(){
 
 	if (tempNode->right != NULL) {
 
-		print(tempNode->right);
+		print(tempNode->right, cache);
 	}
 
 }
 
-void RBTree::print(Node*  node){
+void RBTree::print(Node*  node, Cache & cache){
 
 	if (node == NULL) {
 		cout << "Error: empty node!" << endl;
@@ -116,7 +116,7 @@ void RBTree::print(Node*  node){
 
 	if (node->left != NULL && node->left->pos != -1) {
 
-		print(node->left);
+		print(node->left, cache);
 	}
         
 
@@ -128,18 +128,17 @@ void RBTree::print(Node*  node){
     }
 
 	if (node->right != NULL && node->right->pos != -1) {
-
-		print(node->right);
+		print(node->right, cache);
 	}
 }
 
 
-void RBTree::print(int key){
+void RBTree::print(int key, Cache & cache){
     Node* node = fetch(key);
-    print(node);
+    print(node, cache);
 }
 
-void RBTree::printSingle(Node* node) {
+void RBTree::printSingle(Node* node, Cache & cache) {
 	if (node == NULL) {
 		cout << "NULL node" << endl;
 		return;
@@ -350,6 +349,11 @@ bool RBTree::remove(int key, Cache & cache) {
 			cache.addNode.erase(it);
 		}
 	}
+	for (it = cache.viewNode.begin(); it != cache.viewNode.end(); ++it) {
+		if (it->first->key == key) {
+			cache.viewNode.erase(it);
+		}
+	}
 
 	// replace node's key and pos with the smallest node in it's right subtree
 	// or replace with the biggest node in it's left subtree
@@ -469,7 +473,7 @@ bool RBTree::remove(int key, Cache & cache) {
 
 
 bool RBTree::modify(int key, int value, Cache & cache){
-    Node* node = fetch( key );
+    Node* node = fetch( key);
 
     if( node == NULL ){
         cout << "Error: key does not exits!" << endl;
@@ -479,7 +483,8 @@ bool RBTree::modify(int key, int value, Cache & cache){
 	map<Node*, int>::iterator it;
 	for( it = cache.addNode.begin(); it != cache.addNode.end(); ++it){
 			if( it->first->key == key){
-				cache.modifyNode[node] = it->second;
+				cache.addNode[node] = value;
+				cache.modifyNode[node] = value;
 				cout << "Modify succeed!" << endl;
 				return true;
         }
@@ -509,6 +514,7 @@ bool RBTree::modify(int key, int value, Cache & cache){
 
 
 Node* RBTree::fetch(int key){
+
     Node* tempNode = this->root;
 
     if(root == NULL){
@@ -517,18 +523,15 @@ Node* RBTree::fetch(int key){
 
     int flag = 0;
 
-    while(!flag){
+    while(tempNode->pos != -1){
         if(tempNode->key == key){
             return tempNode;
         }else if(tempNode->key > key){
-            flag = (tempNode->left == NULL) ? 1 : 0;
-			tempNode = (flag) ? tempNode : tempNode->left;
+			tempNode = tempNode->left;
         }else{
-            flag = (tempNode->right == NULL) ? 1 : 0;
-            tempNode = (flag) ? tempNode : tempNode->right;
+            tempNode = tempNode->right;
         }
     }
-
     return NULL;
 }
 
@@ -540,31 +543,20 @@ void RBTree::view(int key, Cache & cache){
 
 	for (it = cache.addNode.begin(); it != cache.addNode.end(); ++it) {
 		if (it->first->key == key) {
-			printSingle(it->first);
+			printSingle(it->first, cache);
 			return;
 		}
 	}
 
 	for (it = cache.modifyNode.begin(); it != cache.modifyNode.end(); ++it) {
 		if (it->first->key == key) {
-			printSingle(it->first);
+			printSingle(it->first, cache);
 			return;
 		}
 	}
 
 	node = fetch(key);
-	printSingle(node);
-}
-
-//--------------------------------------------------
-
-void totate(Node* & node, int dirction){
-    /* zig-zag */
-}
-
-void balance(Node* node) {
-	/* make the tree balance */
-    cout << "Balance the tree" << endl;
+	printSingle(node, cache);
 }
 
 //---------------------------------------------------

@@ -1,6 +1,8 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#define SIZE_TO_UPDATE 20
+
 
 #include <iostream>
 #include <vector>
@@ -21,6 +23,8 @@ struct Cache{
 	map<Node*, int>modifyNode;
 
 	map<Node*, int>addNode;
+
+	map<Node*, int>viewNode;
 };
 
 #endif

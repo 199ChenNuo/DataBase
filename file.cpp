@@ -13,9 +13,6 @@
 #define TO_RIGHT true
 
 
-extern string dataFileName;
-extern string indexFileName;
-
 //================================================================================================
 //------------------------------------ function about node ----------------------------------------
 
@@ -34,10 +31,14 @@ void viewNode(RBTree & tree, Cache & cache) {
 
 	cout << "Viewing..." << endl;
 	cout << "Please enter the key." << endl;
+	// delete
+	cin.clear();
 	getline(cin, strKey);
 
 	// make sure user's input is int
 	while (!isNum(strKey)) {
+		// delete
+		cin.clear();
 		getline(cin, strKey);
 	}
 
@@ -46,11 +47,18 @@ void viewNode(RBTree & tree, Cache & cache) {
 
 	// first check cache
 	map<Node*, int>::iterator it;
-
+	for (it = cache.viewNode.begin(); it != cache.viewNode.end(); ++it) {
+		if (it->first->key == key) {
+			value = it->second;
+			cout << "Key: " << key << " Value: " << value << endl;
+			return;
+		}
+	}
 	for (it = cache.addNode.begin(); it != cache.addNode.end(); ++it) {
 		if (it->first->key == key) {
 			value = it->second;
 			cout << "Key: " << key << " Value: " << value << endl;
+			cache.viewNode[it->first] = it->second;
 			return;
 		}
 	}
@@ -58,6 +66,7 @@ void viewNode(RBTree & tree, Cache & cache) {
 		if (it->first->key == key) {
 			value = it->second;
 			cout << "Key: " << key << " Value: " << value << endl;
+			cache.viewNode[it->first] = it->second;
 			return;
 		}
 	}
@@ -68,6 +77,7 @@ void viewNode(RBTree & tree, Cache & cache) {
 		int pos = node->pos;
 		value = viewValue(pos);
 		cout << "Key: " << key << " Value: " << value << endl;
+		cache.viewNode[node] = value;
 	}
 	else {
 		cout << "Error: key does not exits!" << endl;
@@ -106,13 +116,21 @@ void addNode(RBTree & tree, Cache & cache) {
 
 	cout << "Adding..." << endl;
 	cout << "Please enter the key:" << endl;
+	// delete
+	cin.clear();
 	getline(cin, strKey);
 	while (!isNum(strKey)) {
+		// delete
+		cin.clear();
 		getline(cin, strKey);
 	}
 	cout << "Please enter the value:" << endl;
+	// delete
+	cin.clear();
 	getline(cin, strValue);
 	while (!isNum(strValue)) {
+		// delete
+		cin.clear();
 		getline(cin, strValue);
 	}
 
@@ -148,13 +166,21 @@ void modifyNode(RBTree & tree, Cache & cache) {
 
 	cout << "Modifying..." << endl;
 	cout << "Please enter the key:" << endl;
+	// delete
+	cin.clear();
 	getline(cin, strKey);
 	while (!isNum(strKey)) {
+		// delete
+		cin.clear();
 		getline(cin, strKey);
 	}
 	cout << "Please enter the new value:" << endl;
+	// delete
+	cin.clear();
 	getline(cin, strValue);
 	while (!isNum(strKey)) {
+		// delete
+		cin.clear();
 		getline(cin, strValue);
 	}
 
@@ -186,8 +212,12 @@ void deleteNode(RBTree & tree, Cache & cache) {
 
 	cout << "Deleting..." << endl;
 	cout << "Please enter the key:" << endl;
+	// delete
+	cin.clear();
 	getline(cin, strKey);
 	while (!isNum(strKey)) {
+		// delete
+		cin.clear();
 		getline(cin, strKey);
 	}
 	ss << strKey;
@@ -234,6 +264,8 @@ void getFile(RBTree & tree, Cache & cache) {
 void getFileName() {
 	cout << "Please enter the and name of data file" << endl;
 	cout << "(quit) to quit" << endl;
+	// delete
+	cin.clear();
 	getline(cin, dataFileName);
 }
 

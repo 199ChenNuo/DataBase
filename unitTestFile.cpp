@@ -2,9 +2,6 @@
 
 using namespace std;
 
-extern string dataFileName;
-extern string indexFileName;
-
 void fileTree0(){
 	fstream dataFile;
 	RBTree tree;

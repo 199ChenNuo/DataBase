@@ -67,14 +67,14 @@ void zig0() {
 		tree.add(i, i, cache);
 	}
 
-	tree.print();
+	tree.print(cache);
 
 	Node* node = tree.fetch(3);
 	tree.zig(node);
 
 	cout << endl << endl;
 
-	tree.print();
+	tree.print(cache);
 }
 
 void zag0() {
@@ -85,14 +85,14 @@ void zag0() {
 		tree.add(i, i, cache);
 	}
 
-	tree.print();
+	tree.print(cache);
 
 	Node* node = tree.fetch(3);
 	tree.zag(node);
 
 	cout << endl << endl;
 
-	tree.print();
+	tree.print(cache);
 }
 
 //---------- isBalance(Node* & node) ---------
@@ -209,10 +209,10 @@ void removeCase0() {
 	
 	tree.setRoot(three);
 
-	tree.print();
+	tree.print(cache);
 	tree.remove(3, cache);
 	cout << "remove 3" << endl;
-	tree.print();
+	tree.print(cache);
 
 	Node* newRoot = tree.getRoot();
 	if ((tree.fetch(3) == NULL)) {
@@ -247,10 +247,10 @@ void removeCase1() {
 
 	tree.setRoot(three);
 
-	tree.print();
+	tree.print(cache);
 	tree.remove(3, cache);
 	cout << "remove 3" << endl;
-	tree.print();
+	tree.print(cache);
 
 	Node* newRoot = tree.getRoot();
 	if ((tree.fetch(3) == NULL)) {
@@ -288,10 +288,10 @@ void removeCase2() {
 
 	tree.setRoot(three);
 	
-	tree.print();
+	tree.print(cache);
 	tree.remove(1, cache);
 	cout << "remove 1" << endl;
-	tree.print();
+	tree.print(cache);
 
 	Node* newRoot = tree.getRoot();
 	if ((tree.fetch(1) == NULL) ) {
@@ -327,10 +327,10 @@ void removeCase3() {
 
 	tree.setRoot(three);
 	
-	tree.print();
+	tree.print(cache);
 	tree.remove(0, cache);
 	cout << "remove 0" << endl;
-	tree.print();
+	tree.print(cache);
 
 	Node* newRoot = tree.getRoot();
 	if ((tree.fetch(0) == NULL) ) {
@@ -368,10 +368,10 @@ void removeCase4() {
 
 	tree.setRoot(three);
 
-	tree.print();
+	tree.print(cache);
 	tree.remove(0, cache);
 	cout << "remove 0" << endl;
-	tree.print();
+	tree.print(cache);
 
 	Node* newRoot = tree.getRoot();
 	if ((tree.fetch(0) == NULL)) {
@@ -408,10 +408,10 @@ void removeCase5() {
 
 	tree.setRoot(three);
 
-	tree.print();
+	tree.print(cache);
 	tree.remove(0, cache);
 	cout << "remove 0" << endl;
-	tree.print();
+	tree.print(cache);
 
 	Node* newRoot = tree.getRoot();
 	if ((tree.fetch(0) == NULL) ) {
@@ -462,7 +462,7 @@ void treeRemove1(){
 		cache.addNode.clear();
     }
 
-	tree.printSingle(tree.maxNodeOf(tree.getRoot()->left));
+	tree.printSingle(tree.maxNodeOf(tree.getRoot()->left), cache);
 
 	int preTotal = 2000;
 	int newTotal = 2000;
@@ -480,7 +480,7 @@ void treeRemove1(){
 
 		if (preTotal - newTotal != 1) {
 			cout << "root:" << endl;
-			tree.printSingle(curRoot);
+			tree.printSingle(curRoot, cache);
 			system("pause");
 		}
 		else {
@@ -525,11 +525,11 @@ void treeFetch0(){
     Cache cache;
 
     Node* node = tree.fetch(0);
-    tree.printSingle(node);
+    tree.printSingle(node, cache);
 
     tree.add(0, 0, cache);
     node = tree.fetch(0);
-    tree.printSingle(node);
+    tree.printSingle(node, cache);
 }
 
 void treeFetch1(){
@@ -556,9 +556,9 @@ void treePrint0(){
     for(int i = 0; i < 9; ++i){
         cout << "============================"<<endl;
         cout << "root:" << endl;
-        tree.printSingle(tree.getRoot());
+        tree.printSingle(tree.getRoot(), cache);
         cout << "the whole tree:" << endl;
-        tree.print();
+        tree.print(cache);
     }
 }
 
@@ -566,7 +566,7 @@ void treePrint1(){
     RBTree tree;
     Cache cache;
 
-    tree.print();
+    tree.print(cache);
 
-    tree.printSingle(NULL);
+    tree.printSingle(NULL, cache);
 }

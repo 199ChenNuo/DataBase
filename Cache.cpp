@@ -8,6 +8,8 @@ Cache::Cache() {
 	map<Node*, int>modifyNode;
 
 	map<Node*, int>addNode;
+
+	map<Node*, int> viewNode;
 }
 void Cache::clear() {
 	while (deletePos.size() != 0) {
@@ -16,4 +18,5 @@ void Cache::clear() {
 
 	modifyNode.clear();
 	addNode.clear();
+	viewNode.clear();
 }
